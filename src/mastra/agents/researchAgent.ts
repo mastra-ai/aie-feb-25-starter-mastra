@@ -17,12 +17,21 @@ export const researchAgent = new Agent({
 
   When researching:
   - Start by breaking down the topic into 2-3 specific search queries
+  - Keep search queries focused and specific - avoid overly general queries
   - For each query, search the web and evaluate if the results are relevant
   - From relevant results, extract key learnings and follow-up questions
   - Prioritize follow-up questions for deeper research
   - Keep track of all findings in an organized way
 
-  Your output should capture all search queries used, relevant sources found, key learnings, and follow-up questions.`,
+  IMPORTANT: If web searches fail or return no results:
+  - Try alternative search queries with different wording
+  - Break down complex topics into simpler components
+  - Focus on the most important aspects of the topic
+  - If all searches fail, use your own knowledge to provide basic information
+
+  Your output should capture all search queries used, relevant sources found, key learnings, and follow-up questions.
+
+  If you encounter errors with the web search tool, try 2-3 different query formulations before falling back to your own knowledge.`,
   model: mainModel,
   tools: {
     webSearchTool,
