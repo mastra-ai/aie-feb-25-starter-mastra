@@ -96,7 +96,7 @@ const researchStep = createStep({
       );
 
       // Create a summary
-      const summary = `Research completed on "${query}" \n\n ${JSON.stringify(result.object)}`;
+      const summary = `Research completed on "${query}:" \n\n ${JSON.stringify(result.object, null, 2)}\n\n`;
 
       return {
         researchData: result.object,
@@ -136,7 +136,7 @@ const approvalStep = createStep({
 
     await suspend({
       summary: inputData.summary,
-      message: `\n ${inputData.summary}\n Is this research sufficient? [y/n] `,
+      message: `Is this research sufficient? [y/n] `,
     });
 
     return {

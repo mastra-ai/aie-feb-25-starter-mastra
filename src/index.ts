@@ -15,79 +15,107 @@ const question = (prompt: string) => {
   });
 };
 
+// Helper function to safely get suspend data
+const getSuspendData = (result: any, stepId: string) => {
+  if (result.steps && result.steps[stepId]) {
+    return result.steps[stepId].payload || {};
+  }
+  return {};
+};
+
 // Main function with human-in-the-loop workflow
 const main = async () => {
   try {
-    console.log('=== AI Research Assistant ===');
-    console.log(
-      'This tool helps you research topics and generates comprehensive reports'
-    );
+    console.log('\n=== AI Research Assistant ===');
+    console.log('This tool helps you research topics and generates comprehensive reports\n');
 
     const mainWorkflow = mastra.vnext_getWorkflow('mainWorkflow');
-
     const run = mainWorkflow.createRun();
+
+    console.log('Starting research workflow...\n');
     let result = await run.start({});
 
-    console.log(JSON.stringify(result, null, 2));
-
     if (result.status === 'success') {
+      console.log('Research process completed successfully!');
       console.log('Thank you for using the research assistant!');
+      rl.close();
       return;
     }
 
-    while (
-      result.status === 'suspended' &&
-      result.steps['research-workflow']?.status === 'suspended'
-    ) {
-      const isGetUserQuerySuspended =
-        result.suspended[0].includes('get-user-query');
-      const isApprovalSuspended = result.suspended[0].includes('approval');
+    // Handle workflow suspension
+    while (result.status === 'suspended') {
+      // Handle user query step
+      if (result.suspended[0].includes('get-user-query')) {
+        const suspendData = getSuspendData(result, 'research-workflow');
 
-      if (isGetUserQuerySuspended) {
-        console.log('Suspended fooo get-user-query');
-        // TODO: fix: payload is typed by outputSchema but it should be suspendSchema
-        //@ts-ignore
-        const searchQuery = result.steps['research-workflow'].payload?.message.query;
-        //@ts-ignore
-        const depthQuery = result.steps['research-workflow'].payload?.message.depth;
-        //@ts-ignore
-        const breadthQuery = result.steps['research-workflow'].payload?.message.breadth;
+        const message = suspendData.message?.query || 'What would you like to research?';
+        const depthPrompt = suspendData.message?.depth || 'Research depth (1-3, default: 2):';
+        const breadthPrompt = suspendData.message?.breadth || 'Research breadth (1-5, default: 2):';
 
-        console.log({ searchQuery, depthQuery, breadthQuery });
+        const userQuery = await question(message + ' ');
+        const depth = await question(depthPrompt + ' ');
+        const breadth = await question(breadthPrompt + ' ');
 
-        const userQuery = await question(searchQuery);
-        const depth = await question(depthQuery);
-        const breadth = await question(breadthQuery);
+        console.log('\nStarting research process. This may take a minute or two...\n');
 
         result = await run.resume({
           step: ['research-workflow', 'get-user-query'],
           resumeData: {
             query: userQuery,
-            depth: parseInt(depth),
-            breadth: parseInt(breadth),
+            depth: parseInt(depth) || 2,
+            breadth: parseInt(breadth) || 2,
           },
         });
-      } else if (isApprovalSuspended) {
-        console.log('Suspended fooo approval');
-        //@ts-ignore
-        const suspendMessage = result.steps['research-workflow'].payload.message;
-        //@ts-ignore
-        const summary = result.steps['research-workflow'].payload.summary;
-        console.log({ suspendMessage, summary });
+      }
+      // Handle approval step
+      else if (result.suspended[0].includes('approval')) {
+        const suspendData = getSuspendData(result, 'research-workflow');
 
-        const approval = await question(suspendMessage);
+        const summary = suspendData.summary || 'Research has been completed.';
+        const message = suspendData.message || 'Is this research sufficient? (y/n):';
+
+        console.log('\n=== RESEARCH SUMMARY ===');
+        console.log(summary);
+
+        const approval = await question(message + ' ');
+
         result = await run.resume({
           step: ['research-workflow', 'approval'],
           resumeData: {
-            approved: approval === 'y',
+            approved: approval.toLowerCase() === 'y',
+            action: approval.toLowerCase() === 'y' ? 'generate' : 'restart',
           },
         });
-      } else {
+
+        if (approval.toLowerCase() !== 'y') {
+          console.log('\nRestarting research process...\n');
+        }
+      }
+      // Unknown suspension point
+      else {
+        console.log('Workflow is waiting for an unknown reason. Exiting...');
         break;
       }
     }
+
+    // Handle workflow completion
+    if (result.status === 'success') {
+      const reportPath = result.result?.reportPath;
+      if (reportPath) {
+        console.log(`\nResearch complete! Report saved to: ${reportPath}`);
+      } else {
+        console.log('\nResearch process completed successfully!');
+      }
+    } else if (result.status === 'failed') {
+      console.error('\nResearch process failed:', result.error?.message);
+    }
+
+    console.log('\nThank you for using the research assistant!');
+    rl.close();
   } catch (error) {
-    console.error('An unexpected error occurred:', error);
+    console.error('\nAn unexpected error occurred:', error instanceof Error ? error.message : String(error));
+    console.log('\nPlease try running the research assistant again.');
+    rl.close();
   }
 };
 

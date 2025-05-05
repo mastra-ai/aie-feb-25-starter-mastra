@@ -31,7 +31,12 @@ export const researchAgent = new Agent({
 
   Your output should capture all search queries used, relevant sources found, key learnings, and follow-up questions.
 
-  If you encounter errors with the web search tool, try 2-3 different query formulations before falling back to your own knowledge.`,
+  If you encounter errors with the web search tool, try 2-3 different query formulations before falling back to your own knowledge.
+
+  Make sure to use the web search tool to find the most relevant sources, then evaluate the results using the evaluateResultTool and extract the key learnings using the extractLearningsTool.
+
+  Use all the tools available to you to research the topic.
+  `,
   model: mainModel,
   tools: {
     webSearchTool,
