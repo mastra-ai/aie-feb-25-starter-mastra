@@ -1,58 +1,69 @@
-# Deep Research with Mastra
+# AI Research Assistant with Mastra vNext Workflows
 
-This project implements an AI-powered research system using Mastra to enhance the research capabilities of the application. The implementation replaces the original recursive research function with a more maintainable agent-based approach.
+This project implements an advanced AI research assistant using Mastra's vNext workflows and agent capabilities. It creates an interactive, human-in-the-loop research system that allows users to explore topics, evaluate results, and generate comprehensive reports.
 
 ## Implementation Approach
 
-The deep research functionality is implemented using Mastra's agent-based architecture with custom tools. Here's how it works:
+The research assistant is built on Mastra's vNext workflows architecture for better orchestration and human interaction:
 
-1. **Research Agent**: A specialized Mastra agent responsible for orchestrating the entire research process
-2. **Custom Tools**: Three primary tools handle the core functionality:
-   - `webSearchTool` - Searches the web using the Exa API to find relevant information
-   - `evaluateResultTool` - Evaluates if search results are relevant to the research topic
-   - `extractLearningsTool` - Extracts key learnings and follow-up questions from relevant content
+1. **Workflow-Based Architecture**:
+   - `mainWorkflow`: Coordinates the entire research process
+   - `researchWorkflow`: Handles the core research functionality with suspend/resume for user interaction
+   - Human-in-the-loop experience with approval gates and iterative research
 
-3. **Execution Flow**:
-   - The agent receives a research topic and parameters for depth/breadth
-   - It generates specific search queries related to the topic
-   - For each query, it searches the web and evaluates results for relevance
-   - From relevant results, it extracts key learnings and follow-up questions
-   - The agent follows up on promising leads and organizes the findings
+2. **Research Agent with Custom Tools**:
+   - `webSearchTool`: Searches the web using the Exa API for relevant information
+   - `evaluateResultTool`: Assesses result relevance to the research topic
+   - `extractLearningsTool`: Identifies key learnings and generates follow-up questions
 
-## Key Benefits of Mastra Implementation
+3. **Report Generation**:
+   - `reportAgent`: Transforms research findings into comprehensive markdown reports
+   - Only generates reports after user approval of research quality
 
-1. **Simplified Architecture**: The agent-based approach is more maintainable than the previous recursive implementation
+4. **Interactive CLI Experience**:
+   - Simple command-line interface for user input and feedback
+   - Step-by-step guidance through the research process
+   - Research review and approval before report generation
 
-2. **Error Handling**: Robust error handling at every step ensures the research process can recover from API failures
+## Key Benefits of Mastra vNext Implementation
 
-3. **Structured Output**: The agent returns a strongly typed response with consistent structure for reliable consumption
+1. **True Human-in-the-Loop Research**: Users can guide the research process, approve findings, and iterate when needed
 
-4. **Extensibility**: New capabilities (like using different search engines or evaluation strategies) can be added by updating tools
+2. **Suspend/Resume Capabilities**: The workflow can pause at strategic points to collect user input and feedback
 
-5. **Observability**: Mastra's built-in logging and telemetry provides visibility into the research process
+3. **Structured Workflow**: Clear separation between research, approval, and report generation phases
+
+4. **Resilient Operation**: Robust error handling and fallback mechanisms when web searches fail
+
+5. **Modular Design**: Each component (workflows, agents, tools) can be maintained and upgraded independently
 
 ## How to Use
 
-```typescript
-import { deepResearch } from './index';
+```bash
+# Install dependencies
+npm install
 
-// Run a deep research operation
-const research = await deepResearch(
-  "What do you need to be a D1 shotput athlete?",  // Research topic
-  2,                                               // Depth (how deep to follow up questions)
-  3                                                // Breadth (queries per level)
-);
+# Run the research assistant
+npm run dev
+```
 
-// Use the research results
-console.log(research.queries);          // All search queries used
-console.log(research.searchResults);    // Relevant sources found
-console.log(research.learnings);        // Key learnings extracted
-console.log(research.completedQueries); // All queries that were processed
+Follow the interactive prompts:
+1. Enter your research topic
+2. Specify depth (1-3) and breadth (1-5) parameters
+3. Review the research findings
+4. Approve or reject the research results
+5. If approved, a comprehensive report will be generated (report.md)
+
+## Required Environment Variables
+
+Create a `.env` file with:
+```
+EXA_API_KEY="your-exa-api-key"
 ```
 
 ## Required Dependencies
 
-- `@mastra/core`: Core Mastra functionality
+- `@mastra/core`: Core Mastra functionality with vNext workflows
 - `@ai-sdk/openai`: OpenAI models integration
 - `exa-js`: Exa API client for web search
-- `zod`: Schema definition and validation
+- `zod`: Schema definition and validation for workflows

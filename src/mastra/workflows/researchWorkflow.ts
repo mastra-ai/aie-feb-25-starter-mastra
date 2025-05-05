@@ -36,8 +36,8 @@ const getUserQueryStep = createStep({
     await suspend({
       message: {
         query: "What would you like to research?",
-        depth: "Please provide the depth of the research [1-5]: ",
-        breadth: "Please provide the breadth of the research [1-5]: ",
+        depth: "Please provide the depth of the research [1-3] (default: 2): ",
+        breadth: "Please provide the breadth of the research [1-3] (default: 2): ",
       },
     });
 
