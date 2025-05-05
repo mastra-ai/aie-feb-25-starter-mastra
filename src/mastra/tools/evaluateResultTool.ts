@@ -16,14 +16,15 @@ export const evaluateResultTool = createTool({
       url: z.string(),
       content: z.string(),
     }).describe("The search result to evaluate"),
-    existingUrls: z.array(z.string()).describe("URLs that have already been processed"),
+    existingUrls: z.array(z.string()).describe("URLs that have already been processed").optional(),
   }),
   execute: async ({ context }) => {
     try {
-      const { query, result, existingUrls } = context;
+      const { query, result, existingUrls = [] } = context;
+      console.log("Evaluating result", { context });
 
-      // Check if URL already exists
-      if (existingUrls.includes(result.url)) {
+      // Check if URL already exists (only if existingUrls was provided)
+      if (existingUrls && existingUrls.includes(result.url)) {
         return {
           isRelevant: false,
           reason: "URL already processed"
