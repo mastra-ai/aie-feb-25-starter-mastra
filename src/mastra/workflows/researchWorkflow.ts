@@ -78,7 +78,8 @@ const researchStep = createStep({
           },
         ],
         {
-          output: z.object({
+          maxSteps: 5,
+          experimental_output: z.object({
             queries: z.array(z.string()),
             searchResults: z.array(z.object({
               title: z.string(),
@@ -92,7 +93,7 @@ const researchStep = createStep({
             })),
             completedQueries: z.array(z.string()),
           }),
-        }
+        },
       );
 
       // Create a summary
